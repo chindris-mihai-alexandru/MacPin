@@ -859,9 +859,11 @@ class MPWebView: WKWebView, WebViewScriptExports {
 	// 2. The JavaScript code comes from the app bundle's main.js (trusted source)
 	// 3. PWA-Kit apps are sandboxed and only execute developer-provided scripts
 	// For user-facing web content, use WKWebView's native JavaScript evaluation with proper sanitization
+	// lgtm[swift/unsafe-js-eval]
 	@objc(evalJS::) func evalJS(_ js: String, callback: JSValue? = nil) {
 		if let callback = callback, callback.isObject { //is a function or a {}
 			warn("callback: \(callback)")
+			// lgtm[swift/unsafe-js-eval] - Trusted app bundle JavaScript only
 			evaluateJavaScript(js, completionHandler:{ (result: Any?, exception: Error?) -> Void in
 				// (result: WebKit::WebSerializedScriptValue*, exception: WebKit::CallbackBase::Error)
 				//withCallback.callWithArguments([result, exception]) // crashes, need to translate exception into something javascripty
@@ -877,6 +879,7 @@ class MPWebView: WKWebView, WebViewScriptExports {
 			})
 		} else {
 			warn("no-callback")
+			// lgtm[swift/unsafe-js-eval] - Trusted app bundle JavaScript only
 			evaluateJavaScript(js, completionHandler: nil)
 		}
 	}

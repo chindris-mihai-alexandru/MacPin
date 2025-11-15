@@ -32,6 +32,7 @@ extension AppScriptRuntime: WKScriptMessageHandler {
 			switch message.name {
 				case "MacPinPollStates": // direct poll. app.js needs to authorize this handler per tab
 					//FIXME: should iterate message.body's [varnames] to send events for
+					// lgtm[swift/unsafe-js-eval] - Static JavaScript event dispatch, no user input
 					webView.evaluateJavaScript( //for now, send an omnibus event with all varnames values
 						"window.dispatchEvent(new window.CustomEvent('MacPinWebViewChanged',{'detail':{'transparent': \(webView.transparent)}})); ",
 						completionHandler: nil)

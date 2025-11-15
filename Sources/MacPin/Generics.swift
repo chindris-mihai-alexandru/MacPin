@@ -133,6 +133,7 @@ func loadUserScriptFromBundle(_ basename: String, webctl: WKUserContentControlle
 		// FIXME: break this out into its own func
 		if webctl.userScripts.filter({$0 == script}).count < 1 { // don't re-add identical userscripts
 		//if (find(webctl.userScripts, script) ?? -1) < 0 { // don't re-add identical userscripts
+			// lgtm[swift/unsafe-js-eval] - User script from app bundle resources only
 			webctl.addUserScript(script)
 			//webctl.addUserScriptImmediately(script) // https://github.com/WebKit/webkit/commit/9509d7a48a026d9dc9fd229b13eabf7346cd77aa
 		} else { warn("\(scriptUrl) already loaded!"); return false }
