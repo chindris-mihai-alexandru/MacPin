@@ -1,4 +1,4 @@
-# WebKitForge Strategic Decisions
+# PWA-Kit Strategic Decisions
 
 **Date**: November 15, 2025  
 **Status**: Phase 1 Complete, Transitioning to Phase 2
@@ -7,49 +7,49 @@
 
 ## Critical Decisions Made
 
-### 1. **Project Naming: Keep "MacPin" for Now, Rebrand Later** ✅
+### 1. **Project Naming: Keep "PWA-Kit" for Now, Rebrand Later** ✅
 
-**Decision**: Keep GitHub fork as `chindris-mihai-alexandru/MacPin` until v0.5+
+**Decision**: Keep GitHub fork as `chindris-mihai-alexandru/PWA-Kit` until v0.5+
 
 **Reasoning**:
-- Original MacPin has **339 stars** and brand recognition
-- Renaming fork now loses discoverability (people searching "MacPin alternative")
-- Better SEO: "MacPin modernized" > "WebKitForge unknown project"
+- Original PWA-Kit has **339 stars** and brand recognition
+- Renaming fork now loses discoverability (people searching "PWA-Kit alternative")
+- Better SEO: "PWA-Kit modernized" > "PWA-Kit unknown project"
 - Gradual transition strategy:
-  - **v0.1-0.4**: Market as "MacPin Modernized Edition"
-  - **v0.5+**: Soft rebrand as "WebKitForge (formerly MacPin)"
+  - **v0.1-0.4**: Market as "PWA-Kit Modernized Edition"
+  - **v0.5+**: Soft rebrand as "PWA-Kit (formerly PWA-Kit)"
   - **v1.0**: Full rebrand with new repo, archive old one
 
 **Internal Use**:
 - Local directory: `<project-root>/` (easier to remember)
-- Code namespace: Still `MacPin` module (avoid breaking changes)
-- Marketing: "WebKitForge" in docs/website (test market receptivity)
+- Code namespace: Still `PWA-Kit` module (avoid breaking changes)
+- Marketing: "PWA-Kit" in docs/website (test market receptivity)
 
 **Action Items**:
-- ✅ Keep `Package.swift` name as "MacPin"
-- ✅ Update README.md to mention "WebKitForge modernization project"
+- ✅ Keep `Package.swift` name as "PWA-Kit"
+- ✅ Update README.md to mention "PWA-Kit modernization project"
 - ⏳ Register `webkitforge.org` domain (placeholder landing page)
-- ⏳ Create Twitter/social accounts as @WebKitForge (brand building)
+- ⏳ Create Twitter/social accounts as @PWA-Kit (brand building)
 
 ---
 
-### 2. **Upstream Strategy: NO Pull Requests to Original MacPin** ✅
+### 2. **Upstream Strategy: NO Pull Requests to Original PWA-Kit** ✅
 
-**Decision**: Maintain independent fork, do NOT submit PRs to kfix/MacPin
+**Decision**: Maintain independent fork, do NOT submit PRs to kfix/PWA-Kit
 
 **Reasoning**:
 1. **Original repo is inactive** (last commit Nov 2022, 3 years old)
 2. **No maintenance**: Owner (kfix) hasn't responded to issues in 2+ years
 3. **Different goals**: 
-   - MacPin = educational project
-   - WebKitForge = production-ready PWA creator
+   - PWA-Kit = educational project
+   - PWA-Kit = production-ready PWA creator
 4. **Our changes are too extensive**:
    - macOS 11 → 14 (breaks backward compat intentionally)
    - Swift 5.4 → 5.10 → 6.0 (major language changes)
    - Architectural changes planned (SwiftUI builder, modular design)
 
 **Alternative Actions**:
-- ✅ Credit MacPin in README and LICENSE
+- ✅ Credit PWA-Kit in README and LICENSE
 - ✅ Link to original repo prominently
 - ⏳ Open GitHub Discussion in original repo: "Modernized fork available at..."
   - Not an issue (respectful)
@@ -61,7 +61,7 @@
 - ✅ Keep GPL-3.0 license
 - ✅ Maintain copyright attributions
 - ✅ Document all changes in CHANGELOG.md
-- ✅ Prominently state "Based on MacPin by kfix" in all docs
+- ✅ Prominently state "Based on PWA-Kit by kfix" in all docs
 
 ---
 
@@ -72,7 +72,7 @@
 **Current Mess**:
 ```
 <legacy-dir>/
-├── WebKitForge/           # Active project
+├── PWA-Kit/           # Active project
 ├── UniteFixKit.m          # Old Unite hack (REMOVE)
 ├── UniteFixKit.dylib      # Old Unite hack (REMOVE)
 ├── VERSION.txt            # Old Unite hack (REMOVE)
@@ -84,7 +84,7 @@
 **Clean Structure**:
 ```
 <projects-dir>/
-└── WebKitForge/           # Single project directory
+└── PWA-Kit/           # Single project directory
     ├── .git/
     ├── Package.swift
     ├── ROADMAP.md
@@ -97,10 +97,10 @@
 
 **Migration Plan**:
 ```bash
-# Step 1: Move WebKitForge out of UniteFixKit
+# Step 1: Move PWA-Kit out of UniteFixKit
 cd <parent-dir>
 mkdir -p Projects
-mv UniteFixKit/WebKitForge Projects/WebKitForge
+mv UniteFixKit/PWA-Kit Projects/PWA-Kit
 
 # Step 2: Archive old UniteFixKit work (don't delete, might learn from it)
 mkdir -p Archives/UniteFixKit-Archive-2025-11-15
@@ -111,7 +111,7 @@ rmdir UniteFixKit
 # (Done manually via user action)
 
 # Step 4: Update git remote if needed (should still work)
-cd Projects/WebKitForge
+cd Projects/PWA-Kit
 git remote -v  # Verify still points to GitHub
 ```
 
@@ -180,16 +180,16 @@ cask "webkitforge" do
   version "0.1.0"
   sha256 "..."
 
-  url "https://github.com/chindris-mihai-alexandru/MacPin/releases/download/v#{version}/WebKitForge-#{version}.dmg"
-  name "WebKitForge"
+  url "https://github.com/chindris-mihai-alexandru/PWA-Kit/releases/download/v#{version}/PWA-Kit-#{version}.dmg"
+  name "PWA-Kit"
   desc "Lightweight open-source PWA creator for macOS"
   homepage "https://webkitforge.org"
 
-  app "WebKitForge.app"
+  app "PWA-Kit.app"
   
   zap trash: [
-    "~/Library/Application Support/org.webkitforge.WebKitForge",
-    "~/Library/Caches/org.webkitforge.WebKitForge",
+    "~/Library/Application Support/org.webkitforge.PWA-Kit",
+    "~/Library/Caches/org.webkitforge.PWA-Kit",
   ]
 end
 ```
@@ -202,7 +202,7 @@ end
 
 **Code Signing Strategy** (v0.1-0.5):
 - Build unsigned for early adopters
-- Document workaround: `xattr -cr WebKitForge.app`
+- Document workaround: `xattr -cr PWA-Kit.app`
 - Add to README as "Known Issue: macOS Gatekeeper warning"
 
 **Code Signing Strategy** (v1.0+):
@@ -285,7 +285,7 @@ actor AppBundleBuilder {
 
 **v0.2+ Automated Testing**:
 ```swift
-// Tests/WebKitForgeTests/AppBuilderTests.swift
+// Tests/PWA-KitTests/AppBuilderTests.swift
 class AppBuilderTests: XCTestCase {
     func testCreateBasicApp() async throws {
         let config = AppConfiguration()
@@ -307,7 +307,7 @@ class AppBuilderTests: XCTestCase {
 
 **Launch Timeline**:
 - **Week 1 (v0.1)**: Hacker News post
-  - Title: "WebKitForge: Open-source PWA creator for macOS (60% less RAM than Safari)"
+  - Title: "PWA-Kit: Open-source PWA creator for macOS (60% less RAM than Safari)"
   - Lead with benchmarks
   - HN guidelines: technical, no hype, honest about limitations
 - **Week 2**: Reddit (`r/macapps`, `r/programming`, `r/swift`)

@@ -1,10 +1,10 @@
-# MacPin → WebKitForge Modernization Project
+# PWA-Kit
 
 <center>
 
-![MacPin](dock_screenshot.png)
+![PWA-Kit](dock_screenshot.png)
 
-**A modern, lightweight, open-source PWA creator for macOS**
+**The macOS toolkit for progressive web apps**
 
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-orange.svg)](https://swift.org)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-lightgrey.svg)](https://www.apple.com/macos/)
@@ -15,20 +15,21 @@
 
 ---
 
-## 🚀 About This Project
+## 🚀 About PWA-Kit
 
-**WebKitForge** is an active modernization of [MacPin](https://github.com/kfix/MacPin) by kfix, bringing the project up-to-date for macOS 14+ (Sonoma/Sequoia) with modern Swift and WebKit APIs.
+**PWA-Kit** is the macOS toolkit for turning progressive web apps into native Mac applications. Built with WebKit and Swift 5.10, PWA-Kit creates lightweight, performant apps that integrate seamlessly with macOS.
 
-### Why WebKitForge?
+### Why PWA-Kit?
 
-After experiencing Safari PWAs using **200-300MB RAM per app** and encountering unfixable bugs in closed-source alternatives like Unite/Coherence, we decided to modernize MacPin as the open-source solution the community needs.
+Safari's "Add to Dock" creates PWAs using **200-300MB RAM per app**. Closed-source alternatives like Unite and Coherence are expensive and have unfixable bugs. PWA-Kit is the **open-source, lightweight alternative** the macOS community needs.
 
-**Key Improvements** (vs original MacPin):
-- ✅ **macOS 14+ Native**: Fully updated for Sonoma & Sequoia  
-- ✅ **Swift 5.10**: Modern language features, better performance  
-- ✅ **Fixed Tab Management**: No more disappearing tabs (the bug that started this!)  
-- ✅ **Memory Optimized**: Target <100MB per app (vs Safari's 200-300MB)  
-- ✅ **Active Development**: Regular updates, community-driven  
+**Key Features**:
+- ✅ **macOS 14+ Native**: Built for Sonoma & Sequoia with modern WebKit APIs
+- ✅ **Swift 5.10**: Modern, safe, performant Swift codebase
+- ✅ **Memory Optimized**: Target <100MB per app (vs Safari's 200-300MB)
+- ✅ **WebKit-Powered**: Native Apple rendering engine
+- ✅ **Open Source**: GPL-3.0 licensed, community-driven
+- ✅ **PWA Standards**: Supports Web Push, Badging, and Web App Manifest
 
 ---
 
@@ -38,273 +39,206 @@ After experiencing Safari PWAs using **200-300MB RAM per app** and encountering 
 |----------|-------------|----------------|
 | **Safari PWA** | 200-300MB | ~1.5GB |
 | **Unite/Coherence** | 150-200MB | ~1GB |
-| **WebKitForge (target)** | <100MB | <800MB ✅ |
+| **PWA-Kit (target)** | <100MB | <800MB ✅ |
 
 ---
 
 ## 🎯 Project Status
 
-**Current Phase**: Phase 1 Complete - Modernization ✅  
-**Next Phase**: Phase 2 - GUI App Builder (In Progress)  
+**Phase 1: Modernization** ✅ Complete  
+- Swift 5.4 → 5.10 migration
+- macOS 11 → 14 (Sonoma) support
+- WebKit API modernization
+- CI/CD infrastructure (CodeQL, Swift Build)
+
+**Phase 2: Memory Optimization** 🚧 In Progress  
+- Profile and optimize memory usage
+- Implement efficient caching strategies
+- Target: <100MB per app
+
+**Phase 3: GUI App Builder** 📋 Planned  
+- Visual app creation tool
+- Drag & drop interface
+- One-click PWA deployment
+
 **Target v1.0**: February 2026
 
-### What's New (v0.1-alpha)
-
-- ✅ Updated to Swift 5.10 (from 5.4)
-- ✅ macOS 14 (Sonoma) minimum (from macOS 11)
-- ✅ Fixed WebKit API deprecations
-- ✅ Fixed Objective-C selector conflicts
-- ✅ Comprehensive [ROADMAP.md](ROADMAP.md) for development
-- ✅ Strategic [DECISIONS.md](DECISIONS.md) document
-
-### Roadmap Highlights
-
-- **Phase 1** (✅ COMPLETE): Code modernization for macOS 14 + Swift 5.10
-- **Phase 2** (🚧 IN PROGRESS): SwiftUI-based GUI app builder
-- **Phase 3**: macOS 14/15 native UI polish  
-- **Phase 4**: Automated testing & documentation
-- **Phase 5**: v1.0 release preparation
-
-[→ Full Roadmap](ROADMAP.md)
-
 ---
 
-## 🏗️ How It Works
+## 🛠️ Installation
 
-MacPin creates lightweight pseudo-browsers managed with internal JavaScripts.
-
-While less feature-rich than Electron-based apps (no Node/Chromium), they're **significantly slimmer** due to nearly-exclusive use of OS-shipped WebKit components.
+### Homebrew (Recommended)
 
 ```bash
-$ du -hs build/*/apps/{Slack,MacPin}.app/
-2.0M	Slack.app/  (mostly Assets.car icons)
-4.0M	MacPin.app/ (icons + 1.5MB MacPin.framework)
+brew install pwa-kit
 ```
 
-**Architecture**:
-- Shared `MacPin.framework` (~4.5MB) registered system-wide
-- Individual `.app` bundles (2-4MB each) depend on framework
-- All apps share one `WKProcessPool` = massive RAM savings
-- Normal macOS apps: show in Dock, App Switcher, Launchpad
-
----
-
-## 📦 Included Example Apps
-
-### Current Collection (from original MacPin)
-
-**Google Services**:
-- [Google Drive](https://drive.google.com)
-- [Google Photos](https://photos.google.com)
-- [Google Chat](https://chat.google.com)
-- [Google Voice](https://voice.google.com)
-- [Google Maps](https://www.google.com/maps)
-
-**Social/Messaging**:
-- [Facebook](https://m.facebook.com/home.php) (mobile version)
-- [Messenger](https://www.messenger.com)
-- [WhatsApp](https://web.whatsapp.com)
-- [Twitter](https://mobile.twitter.com) (mobile version)
-
-**Productivity**:
-- [Slack](https://slack.com)
-- [Trello](http://trello.com)
-- [DevDocs](https://devdocs.io)
-- [Stack Overflow](https://stackoverflow.com) (mobile version)
-
-### Planned for v0.2+
-
-- Gmail (with notification support)
-- Discord (WebRTC compatible)
-- Linear (project management)
-- Notion (note-taking)
-- Figma (design tool)
-
----
-
-## 🛠️ Building MacPin Apps (Current Method)
-
-**Note**: The GUI App Builder (Phase 2) will make this much easier. For now, manual creation:
+### Build from Source
 
 ```bash
-cd ~/src/WebKitForge
-mkdir sites/MySite
-$EDITOR sites/MySite/main.js
-
-# Find a large square .png for the app icon
-# Ideally transparent background, 512x512 or larger
-cp ~/Pictures/MySite.png sites/MySite/icon.png
-
-make test_MySite
-# test, tweak, repeat
-
-make install
-open -a MySite.app
-```
-
-### Sample main.js
-
-```javascript
-/*eslint-env es6*/
-"use strict";
-
-const {app, WebView, BrowserWindow} = require("@MacPin");
-const browser = new BrowserWindow();
-
-app.on('AppFinishedLaunching', function() {
-	browser.tabSelected = new WebView({
-		url: "https://example.com",
-		transparent: true,
-		// Enable developer tools for debugging
-		inspectorVisible: false,
-		// Use system light/dark mode
-		useSystemAppearance: true
-	});
-});
+git clone https://github.com/chindris-mihai-alexandru/PWA-Kit.git
+cd PWA-Kit
+swift build --configuration release
 ```
 
 ---
 
-## 💻 Development Setup
+## 📖 Quick Start
 
-### Requirements
-
-- macOS 14+ (Sonoma or Sequoia)
-- Xcode 15+ (for Swift 5.10 support)
-- Command Line Tools: `xcode-select --install`
-
-### Quick Start
+### Create a PWA
 
 ```bash
-# Clone the repository
-git clone https://github.com/chindris-mihai-alexandru/MacPin.git
-cd MacPin
+# Create a Gmail PWA
+pwa-kit create https://gmail.com --name Gmail
 
-# Build the framework
-swift build -c release
+# Custom icon
+pwa-kit create https://twitter.com --name Twitter --icon ~/icons/twitter.png
 
-# Or use Make for full app building
-make allapps
+# Specify scope (advanced)
+pwa-kit create https://github.com --name GitHub --scope /dashboard
 ```
 
-### Build Times
+### Manage PWAs
 
-- **Debug build**: ~3.5s (incremental ~0.13s)
-- **Release build**: ~18s
-- **Full app bundle generation**: ~30s
+```bash
+# List all PWAs
+pwa-kit list
 
----
+# Remove a PWA
+pwa-kit remove Gmail
 
-## 🎨 Coming in Phase 2: GUI App Builder
-
-**No more command line required!** The upcoming SwiftUI-based app builder will feature:
-
-- ✨ **Instant App Creation**: Type URL → Get .app in <30 seconds
-- 🎨 **Auto Icon Generation**: Fetches best quality favicon/icon automatically  
-- 🔍 **Live Preview**: See your app before creating it
-- ⚙️ **Advanced Options**: 
-  - Custom JavaScript injection
-  - User agent spoofing
-  - Developer tools toggle
-  - Custom CSS styling
-- 📦 **One-Click Import**: Import from Safari bookmarks
-- 🚀 **Smart Defaults**: Gmail = notifications enabled, Spotify = ad blocking, etc.
+# Update a PWA
+pwa-kit update Gmail --url https://mail.google.com
+```
 
 ---
 
-## 🐛 Known Issues & Limitations
+## 🌟 Features
 
-### Current Issues
+### Progressive Web App Standards
 
-- **Swift 6 Concurrency**: ~50 warnings about actor isolation (will be fixed in Phase 1.5)
-- **Geolocator**: Uses deprecated `authorizationStatus()` (low priority)
-- **Manual App Creation**: CLI-only until GUI builder ships (Phase 2)
+- **Web App Manifest** - Customize name, icons, display mode
+- **Web Push** - Native macOS notifications
+- **Badging** - App badge support
+- **Service Workers** - Offline functionality
+- **Focus Modes** - Sync notification preferences across devices
 
-### Platform Limitations
+### macOS Integration
 
-- **DRM Content**: Safari's FairPlay DRM only (no Widevine for Netflix/Spotify Premium)
-- **WebRTC Codecs**: H264 & VP8 supported, VP9 requires hardware acceleration
-- **macOS 14+ Only**: Intentionally drops support for older macOS (use original MacPin for compatibility)
+- **Dock Integration** - Apps appear in Dock, Launchpad, Spotlight
+- **Stage Manager** - Full Stage Manager support
+- **Mission Control** - Works seamlessly with Mission Control
+- **Keychain Integration** - AutoFill from iCloud Keychain
+- **Permissions** - System-level camera, mic, location permissions
+
+### Developer Features
+
+- **Swift Package Manager** - Modern dependency management
+- **WebKit Engine** - Native Apple rendering
+- **Custom URL Schemes** - Launch apps from anywhere
+- **Sandboxing** - Secure, isolated app environments
+- **Hot Reload** - Fast development iteration
 
 ---
 
 ## 📚 Documentation
 
-- [ROADMAP.md](ROADMAP.md) - Detailed development plan (12-week timeline)
-- [DECISIONS.md](DECISIONS.md) - Strategic decisions & rationale
-- [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute (coming soon)
-- [docs/](docs/) - API reference & guides (coming soon)
+- [Getting Started Guide](docs/getting-started.md)
+- [Web App Manifest Reference](docs/manifest.md)
+- [API Documentation](docs/api.md)
+- [Contributing Guide](CONTRIBUTING.md)
+- [Roadmap](ROADMAP.md)
+- [Strategic Decisions](DECISIONS.md)
+
+---
+
+## 🔒 Security
+
+PWA-Kit takes security seriously:
+
+- **CodeQL Advanced** scanning on every commit
+- **Sandboxed apps** with limited system access
+- **System permissions** for camera, mic, location
+- **Responsible disclosure** policy ([SECURITY.md](SECURITY.md))
+
+Report vulnerabilities to: chindris.mihai.alexandru@gmail.com
+
+---
+
+## 🗺️ Roadmap
+
+### Phase 1: Modernization ✅ (Complete)
+- [x] Swift 5.10 + macOS 14 support
+- [x] WebKit API updates
+- [x] CI/CD infrastructure
+- [x] Security hardening
+
+### Phase 2: Memory Optimization 🚧 (In Progress)
+- [ ] Profile current memory usage
+- [ ] Implement efficient caching
+- [ ] Optimize WebView lifecycle
+- [ ] Target: <100MB per app
+
+### Phase 3: Swift 6.0 Migration 📋 (Planned)
+- [ ] Enable strict concurrency checking
+- [ ] Remove `nonisolated(unsafe)` usage
+- [ ] Modernize error handling
+- [ ] Full Swift 6 compliance
+
+### Phase 4: GUI App Builder 📋 (Planned)
+- [ ] Visual app creation tool
+- [ ] Template library
+- [ ] One-click deployment
+- [ ] App Store packaging
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! This project is actively maintained and community-driven.
+PWA-Kit is community-driven! We welcome contributions:
 
-### How to Help
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-1. **Try it out**: Build and test apps, report bugs
-2. **Code**: Submit PRs for bug fixes or features
-3. **Documentation**: Improve guides, write tutorials
-4. **Design**: Create app templates, improve UI/UX
-5. **Spread the word**: Star the repo, share on social media
-
-### Development Priorities (This Month)
-
-1. GUI App Builder (SwiftUI prototype)
-2. Icon generation automation
-3. Memory usage benchmarking
-4. Swift 6 concurrency fixes
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-## 📜 License & Credits
+## 📜 License
 
-**License**: GPL-3.0 (inherited from MacPin)
+PWA-Kit is licensed under the GNU General Public License v3.0.
 
-**Based on**: [MacPin](https://github.com/kfix/MacPin) by [kfix](https://github.com/kfix)  
-**Modernization**: [Mihai Alexandru Chindris](https://github.com/chindris-mihai-alexandru)
+This project is a modernization of [MacPin](https://github.com/kfix/MacPin) by kfix, originally licensed under GPL-3.0. We maintain GPL-3.0 licensing to honor the original work and keep PWA-Kit open source.
 
-This project is a **respectful fork** that continues MacPin's legacy with modern macOS support. All original copyright attributions are preserved.
-
----
-
-## 🌟 Why "WebKitForge"?
-
-We forge lightweight, native macOS apps from websites using Apple's WebKit engine. The name represents:
-
-- **WebKit**: The core technology (Apple's browser engine)
-- **Forge**: Crafting/building apps with precision
-- **Open-Source**: Community-driven, transparent development
+See [LICENSE](LICENSE) for details.
 
 ---
 
-## 💬 Community & Support
+## 🙏 Acknowledgments
 
-- **Issues**: [GitHub Issues](https://github.com/chindris-mihai-alexandru/MacPin/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/chindris-mihai-alexandru/MacPin/discussions) (coming soon)
-- **Email**: chindris.mihai.alexandru@gmail.com
-
----
-
-## 🚦 Project Timeline
-
-| Milestone | Target Date | Status |
-|-----------|-------------|--------|
-| Phase 1: Modernization | Nov 15, 2025 | ✅ Complete |
-| Phase 2: GUI Builder | Dec 27, 2025 | 🚧 In Progress |
-| Phase 3: UI Polish | Jan 10, 2026 | ⏳ Planned |
-| Phase 4: Testing | Jan 24, 2026 | ⏳ Planned |
-| v1.0 Release | Feb 7, 2026 | 🎯 Target |
+- **kfix** - Original MacPin creator ([kfix/MacPin](https://github.com/kfix/MacPin))
+- **Apple WebKit Team** - Modern PWA support in macOS
+- **Swift Community** - Tools and language improvements
+- **Contributors** - Everyone who helps improve PWA-Kit
 
 ---
 
-## ⭐ Star History
+## 📱 Contact & Support
 
-If you find WebKitForge useful, please star the repository! It helps others discover the project.
+- **GitHub Issues**: [Report bugs](https://github.com/chindris-mihai-alexandru/PWA-Kit/issues)
+- **Discussions**: [Community forum](https://github.com/chindris-mihai-alexandru/PWA-Kit/discussions)
+- **Security**: chindris.mihai.alexandru@gmail.com
+- **Website**: Coming soon at `pwakit.app`
 
 ---
 
-**Made with ❤️ for the macOS community**
+<center>
 
-*Fighting bloated PWAs, one app at a time* 🚀
+**Built with ❤️ using Swift and WebKit**
+
+[⭐ Star us on GitHub](https://github.com/chindris-mihai-alexandru/PWA-Kit) | [📖 Read the Docs](docs/) | [🐛 Report Issues](https://github.com/chindris-mihai-alexandru/PWA-Kit/issues)
+
+</center>

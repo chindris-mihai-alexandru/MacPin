@@ -2,14 +2,15 @@
 import PackageDescription
 import Foundation
 let package = Package(
-    name: "MacPin",
-    // Updated for WebKitForge modernization - targeting macOS 14 (Sonoma) for modern APIs
-    // Using Swift 5.10 for stability - Swift 6.0 strict concurrency will be adopted in Phase 1.5
+    name: "PWA-Kit",
+    // PWA-Kit: The macOS toolkit for progressive web apps
+    // Targeting macOS 14 (Sonoma) with Swift 5.10 for modern PWA support
+    // Swift 6.0 strict concurrency will be adopted in Phase 1.5
     platforms: [.macOS(.v14)],
     products: [
-        .library(name: "MacPin", type: .dynamic, targets: ["MacPin"]),
-        .executable(name: "MacPin_static", targets: ["MacPin_static"]),
-        .executable(name: "MacPin_stub", targets: ["MacPin_stub"]),
+        .library(name: "PWAKit", type: .dynamic, targets: ["PWAKit"]),
+        .executable(name: "PWAKit_static", targets: ["PWAKit_static"]),
+        .executable(name: "PWAKit_stub", targets: ["PWAKit_stub"]),
         .executable(name: "iconify", targets: ["iconify"]),
     ],
     dependencies: [
@@ -36,12 +37,12 @@ let package = Package(
         ),
     ]
 )
-if let iosvar = ProcessInfo.processInfo.environment["MACPIN_IOS"], !iosvar.isEmpty {
+if let iosvar = ProcessInfo.processInfo.environment["PWAKIT_IOS"], !iosvar.isEmpty {
     package.platforms = [.iOS(.v13)]
-    package.products = [ .executable(name: "MacPin", targets: ["MacPin"]) ]
+    package.products = [ .executable(name: "PWAKit", targets: ["PWAKit"]) ]
     package.targets.append(
         .executableTarget(
-            name: "MacPin",
+            name: "PWAKit",
             dependencies: [
                 "WebKitPrivates",
                 "JavaScriptCorePrivates",
@@ -62,7 +63,7 @@ if let iosvar = ProcessInfo.processInfo.environment["MACPIN_IOS"], !iosvar.isEmp
             ],
             path: "Tools/iconify"
         ),
-        .target(name: "MacPin",
+        .target(name: "PWAKit",
             dependencies: [
                 "WebKitPrivates",
                 "JavaScriptCorePrivates",
@@ -74,13 +75,13 @@ if let iosvar = ProcessInfo.processInfo.environment["MACPIN_IOS"], !iosvar.isEmp
             path: "Sources/MacPinOSX"
         ),
         .executableTarget(
-            name: "MacPin_static",
+            name: "PWAKit_static",
             dependencies: [
-                .target(name: "MacPin")
+                .target(name: "PWAKit")
             ]
         ),
         .executableTarget(
-            name: "MacPin_stub",
+            name: "PWAKit_stub",
             dependencies: [],
             linkerSettings: [
                 .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@loader_path:@loader_path/../Frameworks"])
