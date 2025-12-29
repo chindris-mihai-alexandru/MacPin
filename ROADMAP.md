@@ -1,515 +1,343 @@
-# WebKitForge Modernization Roadmap
+# PWA-Kit Roadmap
 
-## Project Overview
+## Project Vision
 
-**WebKitForge** is a modern fork of MacPin - a lightweight, open-source WebKit-based site-specific browser (SSB) framework for macOS.
+**PWA-Kit** is the power tool for web apps on macOS. While Safari's "Add to Dock" creates basic web app windows, PWA-Kit creates **smart, customizable containers** with per-app ad blocking, script injection, custom styling, and more.
 
-**Original Repository**: [kfix/MacPin](https://github.com/kfix/MacPin) (339 stars, GPL-3.0, last updated Nov 2022)  
-**Fork Repository**: [chindris-mihai-alexandru/MacPin](https://github.com/chindris-mihai-alexandru/MacPin)  
-**Branch**: `modernize/swift6-macos15`
-
-### Why WebKitForge?
-
-After attempting to fix Unite/Coherence (closed-source SSB apps) via method swizzling and encountering unfixable deep layout engine bugs, we decided to fork MacPin as an open-source alternative that we can fully control and improve.
+**Tagline**: "Your web apps, your rules."
 
 ---
 
-## Current Status (as of Nov 15, 2025)
+## Current Status (December 16, 2025)
 
 ### ✅ Build Status: SUCCESS
+- **Swift**: 5.10+ (6.0 compatible)
+- **macOS**: 14.0+ (Sonoma)
+- **Architecture**: arm64 (Apple Silicon)
 
-The codebase **builds successfully** on:
-- **Swift**: 6.2.1 (swiftlang-6.2.1.4.8)
-- **macOS**: 15.0 (Sequoia)
-- **Target**: arm64-apple-macosx15.0
-- **Build Time**: ~3.5s
-
-### 📊 Current Stack
-
-- **Swift Version**: 5.4 (declared in Package.swift)
-- **Minimum macOS**: 11.0 (Big Sur)
-- **Build System**: Swift Package Manager + GNU Make
-- **Architecture**: Dynamic Framework + Stub Launcher
-- **Dependencies**:
-  - `swift-argument-parser` 1.6.2
-  - Local: `Linenoise`, `UTIKit`
-  - System: `WebKitPrivates`, `JavaScriptCorePrivates`, `ViewPrivates`, `UserNotificationPrivates`
-
-### ⚠️ Known Issues (Warnings Only)
-
-**Deprecations** (15 warnings total):
-1. **macOS 11.0 deprecations**:
-   - `NSWorkspace.absolutePathForApplication(withBundleIdentifier:)` → Use `URLForApplicationWithBundleIdentifier:`
-   
-2. **macOS 10.14 deprecations**:
-   - `WebKitErrorDomain` (9 occurrences) → Use `WKError.errorDomain`
-   
-3. **Swift 6 compatibility warnings**:
-   - Temporary pointer conversions in `AppScriptRuntime.swift:552`
-   - Unused variables (7 occurrences)
-
-**No errors** - codebase is fully functional!
+### ✅ Phase 0: Content Blocking - COMPLETE
+- `ContentBlocker.swift` implemented with full WKContentRuleListStore support
+- Predefined rule sets: ads, trackers, cookies, social widgets, HTTPS upgrade
+- Custom rule builder API
+- Bundle JSON rules for ads and trackers
 
 ---
 
-## Phase 1: Code Modernization (Week 1-2)
+## Phase 1: Content Blocking Polish (Week 1-2)
 
-**Goal**: Update to modern Swift & macOS APIs while maintaining backward compatibility testing.
+**Goal**: Make content blocking production-ready and user-facing.
 
-### 1.1 Update Package.swift ✅ Priority: HIGH
+### 1.1 WebView Integration ✅ Priority: HIGH
 
-**File**: `Package.swift`
+**Tasks**:
+- [ ] Add `contentBlocking: Bool` option to MPWebViewConfig
+- [ ] Auto-apply default blocking rules on WebView creation
+- [ ] Add JavaScript API: `$.browser.enableAdBlocking()`
+- [ ] Add JavaScript API: `$.browser.enableTrackerBlocking()`
 
-**Changes**:
-```swift
-// Current
-swift-tools-version:5.4
-platforms: [.macOS(.v11)]
-
-// Target
-swift-tools-version:6.0
-platforms: [.macOS(.v14)] // Sonoma - good balance of modern + compatibility
+**Example Usage**:
+```javascript
+// In app's main.js
+let tab = $.browser.tabSelected;
+tab.enableAdBlocking();
+tab.enableTrackerBlocking();
 ```
 
-**Why macOS 14**:
-- macOS 15 (Sequoia) is too new - excludes many users
-- macOS 14 (Sonoma) released Oct 2023 - good adoption
-- macOS 13 (Ventura) still lacks some modern APIs we want
-- Keeps Swift 6 strict concurrency features
+### 1.2 Settings Persistence ✅ Priority: MEDIUM
 
-### 1.2 Fix API Deprecations ✅ Priority: HIGH
+**Tasks**:
+- [ ] Store blocking preferences in UserDefaults
+- [ ] Per-app blocking configuration
+- [ ] Global default settings
 
-#### A. NSWorkspace API Update
-**File**: `Sources/MacPin_stub/main.swift:56`
+### 1.3 Testing & Validation ✅ Priority: HIGH
 
-**Before**:
-```swift
-if let MPappPath = NSWorkspace.shared.absolutePathForApplication(withBundleIdentifier: "com.github.kfix.MacPin.MacPin"),
-```
-
-**After**:
-```swift
-if let MPappURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.github.kfix.MacPin.MacPin"),
-   let MPappPath = MPappURL.path,
-```
-
-#### B. WebKitErrorDomain Replacement
-**Files**: `Sources/MacPinOSX/shared/WebViewDelegates.swift` (9 locations)
-
-**Before**:
-```swift
-if error._domain == WebKitErrorDomain && error._code == kWKErrorCodePlugInWillHandleLoad {
-```
-
-**After**:
-```swift
-if error._domain == WKError.errorDomain && error._code == WKError.Code.plugInWillHandleLoad.rawValue {
-```
-
-**Pattern**: Replace all `WebKitErrorDomain` with `WKError.errorDomain`
-
-#### C. JSContext C String Issue
-**File**: `Sources/MacPinOSX/shared/AppScriptRuntime.swift:552`
-
-**Before**:
-```swift
-className: "MPGlobalObject", parentClass: nil,
-```
-
-**After**:
-```swift
-className: "MPGlobalObject".withCString { $0 }, parentClass: nil,
-```
-
-**OR** (preferred - static lifetime):
-```swift
-static let className = ("MPGlobalObject" as NSString).utf8String
-// Then use:
-className: Self.className, parentClass: nil,
-```
-
-### 1.3 Clean Up Unused Variables ✅ Priority: MEDIUM
-
-Fix 7 warnings about unused variables:
-- Replace with `_` for intentionally unused
-- Remove if truly unnecessary
-- Use value if it was meant to be used
-
-**Locations**:
-- `Sources/MacPin_stub/main.swift:46` - `sharedURL`
-- `Sources/MacPinOSX/shared/WebViewDelegates.swift:397` - `scheme`
-- `Sources/MacPinOSX/shared/WebViewDelegates.swift:398` - unused `popup()` result
-
-### 1.4 Update Build Configuration ✅ Priority: MEDIUM
-
-**File**: `Makefile`
-
-Update version and metadata:
-```makefile
-VERSION := 1.0.0-alpha  # Start fresh
-template_bundle_id := org.webkitforge.WebKitForge  # Rebrand
-```
-
----
-
-## Phase 2: Feature Additions (Week 3-6)
-
-**Goal**: Add features that make WebKitForge better than Unite/Coherence.
-
-### 2.1 Fix Tab Management Issues ✅ Priority: HIGH
-
-**Problem**: Unite 6.5 has unfixable tab visibility bugs (the reason we started this project!)
-
-**Implementation**:
-1. Review `Sources/MacPinOSX/BrowserViewControllerOSX.swift`
-2. Review `Sources/MacPinOSX/TabFlowController.swift`
-3. Ensure tab bar height is consistently enforced
-4. Add drag-and-drop tab rearranging (broken in Unite)
-5. Add keyboard shortcuts for tab navigation
+**Test Sites**:
+- CNN.com (heavy ads)
+- Forbes.com (ad walls)
+- YouTube.com (pre-roll ads - note: may not block video ads)
+- Reddit.com (promoted posts)
 
 **Success Criteria**:
-- Tabs visible at all times
-- Smooth drag-and-drop reordering
-- Cmd+1-9 for tab switching
-- Cmd+Shift+[ / ] for prev/next tab
+- Ads not visible on test sites
+- Pages still function correctly
+- No JavaScript errors from blocked content
 
-### 2.2 GUI App Creator ✅ Priority: HIGH
+---
 
-**Problem**: Current MacPin requires CLI + manual icon/config setup.
+## Phase 2: CSS/JS Injection Engine (Week 3-4)
 
-**Solution**: SwiftUI-based app builder
+**Goal**: Allow users to customize any web app's appearance and behavior.
 
-**Files to Create**:
-- `Sources/WebKitForgeBuilder/` (new directory)
-- `Sources/WebKitForgeBuilder/BuilderApp.swift` - SwiftUI app
-- `Sources/WebKitForgeBuilder/Models/AppConfig.swift` - SSB configuration
-- `Sources/WebKitForgeBuilder/Views/MainBuilderView.swift` - Main interface
+### 2.1 Enhanced Injection UI ✅ Priority: HIGH
+
+**Current**: Scripts/styles loaded from bundle resources only.
+
+**Improvement**: Runtime injection with hot-reload.
+
+**Tasks**:
+- [ ] Create `ScriptInjector.swift` with runtime injection
+- [ ] Support Greasemonkey/Tampermonkey metadata blocks
+- [ ] Add file watcher for CSS hot-reload
+- [ ] Create JavaScript API for injection management
+
+### 2.2 Example Use Cases
+
+**Dark Mode for Any Site**:
+```css
+/* enDarken.css */
+html {
+    filter: invert(1) hue-rotate(180deg);
+}
+img, video, [style*="background-image"] {
+    filter: invert(1) hue-rotate(180deg);
+}
+```
+
+**Remove Distractions from YouTube**:
+```javascript
+// youtube-focus.js
+// ==UserScript==
+// @name YouTube Focus
+// @match *://www.youtube.com/*
+// ==/UserScript==
+
+document.querySelectorAll('#related, #comments, ytd-ad-slot-renderer')
+    .forEach(el => el.remove());
+```
+
+### 2.3 Script/Style Marketplace Concept
+
+**Future Vision**: Community-contributed mods
+- "Gmail Minimal" - Remove sidebar clutter
+- "Twitter Focus" - Hide trends and recommendations
+- "Notion Dark" - True dark theme
+
+---
+
+## Phase 3: Built-in Block Lists (Week 5-6)
+
+**Goal**: Integrate popular ad blocking lists.
+
+### 3.1 EasyList Integration ✅ Priority: MEDIUM
+
+**Tasks**:
+- [ ] Parse EasyList format to WebKit JSON rules
+- [ ] Create update mechanism for block lists
+- [ ] Add UI for list selection
+- [ ] Implement list caching
+
+**Block Lists to Support**:
+- EasyList (ads)
+- EasyPrivacy (trackers)
+- Fanboy's Annoyance List (social, cookies notices)
+- Regional lists (optional)
+
+### 3.2 Custom List Support
+
+**Tasks**:
+- [ ] Allow importing custom block list URLs
+- [ ] Validate and compile lists on import
+- [ ] Store compiled lists for performance
+
+---
+
+## Phase 4: Optional AI Sidebar (Week 7-10)
+
+**Goal**: Integrate local LLMs for "smart" web app interaction.
+
+### 4.1 Ollama Integration ✅ Priority: MEDIUM
+
+**Architecture**:
+```
+┌─────────────────────────────────────────┐
+│ PWA-Kit Window                          │
+├─────────────────────┬───────────────────┤
+│                     │ AI Sidebar        │
+│   Web App Content   │                   │
+│   (WKWebView)       │ [Model: llama3]   │
+│                     │                   │
+│                     │ "Summarize this   │
+│                     │  page for me"     │
+│                     │                   │
+│                     │ [Response area]   │
+│                     │                   │
+└─────────────────────┴───────────────────┘
+```
+
+**Tasks**:
+- [ ] Create `OllamaClient.swift` for API communication
+- [ ] Build SwiftUI sidebar panel
+- [ ] Implement page context extraction (DOM to text)
+- [ ] Add streaming response display
+- [ ] Settings for model selection and endpoint
+
+### 4.2 Privacy Focus
+
+**Key Differentiator**: All AI processing is LOCAL
+- No data sent to cloud
+- Works offline (with downloaded models)
+- User owns their conversation history
+
+### 4.3 Use Cases
+
+- "Summarize this article"
+- "Draft a reply to this email"
+- "Explain this error message"
+- "What are the key points of this document?"
+
+---
+
+## Phase 5: GUI App Builder (Week 11-14)
+
+**Goal**: Visual app creation without command line.
+
+### 5.1 PWAKitBuilder App ✅ Priority: HIGH
+
+**Tech Stack**: SwiftUI + Combine
 
 **Features**:
 - URL input with validation
 - App name input
-- Icon import (drag-and-drop or file picker)
-- Icon generation from URL favicon
+- Icon import (drag-drop or file picker)
+- Automatic favicon fetching
+- Content blocking toggles
+- Custom CSS/JS editor
 - Live preview
-- "Create App" button → generates `.app` bundle
-- Optional: JavaScript injection editor
-- Optional: Custom CSS editor
+- One-click "Create App" button
 
-**UI Mockup**:
+### 5.2 UI Design
+
 ```
-┌─────────────────────────────────────┐
-│ WebKitForge App Builder             │
-├─────────────────────────────────────┤
-│ App URL:  [https://example.com   ] │
-│ App Name: [Example              ] │
-│                                      │
-│ Icon:     [Drop icon here]           │
-│           or generate from favicon   │
-│                                      │
-│ Advanced Options ▾                   │
-│   [ ] Enable Developer Tools         │
-│   [ ] Custom User Agent             │
-│   [ ] Inject JavaScript             │
-│   [ ] Custom CSS                    │
-│                                      │
-│           [Create App]               │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ PWA-Kit Builder                    [_][□][×] │
+├─────────────────────────────────────────┤
+│                                         │
+│  App URL:    [https://gmail.com      ]  │
+│  App Name:   [Gmail                  ]  │
+│                                         │
+│  Icon:       [🖼️ Drop icon here     ]   │
+│              [□ Fetch from website   ]  │
+│                                         │
+│  ── Privacy & Blocking ──────────────   │
+│  [✓] Block Ads                          │
+│  [✓] Block Trackers                     │
+│  [ ] Block Third-Party Cookies          │
+│  [ ] Block Social Widgets               │
+│                                         │
+│  ── Advanced ─────────────────────────  │
+│  [▶] Custom CSS                         │
+│  [▶] Custom JavaScript                  │
+│  [▶] Custom User Agent                  │
+│                                         │
+│              [Create App]               │
+│                                         │
+└─────────────────────────────────────────┘
 ```
 
-**Add to Package.swift**:
-```swift
-.executable(name: "WebKitForgeBuilder", targets: ["WebKitForgeBuilder"]),
-```
+### 5.3 Monetization
 
-### 2.3 Improved App Bundling ✅ Priority: MEDIUM
-
-**Current Issue**: Apps depend on external `MacPin.framework`
-
-**Goal**: Self-contained apps OR shared framework in ~/Library
-
-**Options**:
-
-**A. Embedded Framework** (Preferred)
-- Bundle `MacPin.framework` inside each `.app/Contents/Frameworks/`
-- Increases app size (~4MB per app) but apps are portable
-- No system-wide installation needed
-
-**B. System Framework**
-- Install `MacPin.framework` to `~/Library/Frameworks/`
-- All apps share one framework copy
-- Requires installer/updater
-
-**Implementation**:
-- Update `Makefile` bundling logic
-- Test code signing with embedded framework
-- Ensure `@rpath` is correct
-
-### 2.4 Notarization Support ✅ Priority: MEDIUM
-
-**Goal**: Apps pass Gatekeeper without "unidentified developer" warnings.
-
-**Requirements**:
-- Apple Developer Account ($99/year)
-- Hardened runtime
-- Secure timestamp
-- Notarization API integration
-
-**Files to Update**:
-- `Makefile` - add notarization targets
-- `templates/macos/entitlements.plist` - add hardened runtime entitlements
-
-**New Make Targets**:
-```makefile
-notarize-%.app: $(appdir)/%.app
-    xcrun notarytool submit $< --keychain-profile "AC_PASSWORD" --wait
-    xcrun stapler staple $<
-```
+**PWAKitBuilder** is the commercial product:
+- Closed-source SwiftUI app
+- Calls PWA-Kit CLI under the hood
+- Sold on Gumroad: Pay-What-You-Want, suggested $29
+- Legal: Separate codebase, not GPL-derived
 
 ---
 
-## Phase 3: UI/UX Polish (Week 7-8)
+## Phase 6: Polish & Release (Week 15-16)
 
-**Goal**: Modern macOS 14/15 native experience.
+### 6.1 Documentation ✅ Priority: HIGH
 
-### 3.1 macOS 14/15 Native UI ✅ Priority: MEDIUM
+**Create**:
+- [ ] User guide for creating apps
+- [ ] Developer guide for contributing
+- [ ] JavaScript API reference
+- [ ] Troubleshooting guide
 
-**Updates**:
-- Use SF Symbols for icons
-- Adopt macOS 14 menu bar styling
-- Add vibrancy effects for sidebar/tabs
-- Support macOS 15 accent colors
+### 6.2 Testing ✅ Priority: HIGH
 
-**Files**:
-- `Sources/MacPinOSX/WindowController.swift`
-- `Sources/MacPinOSX/BrowserViewControllerOSX.swift`
+**Test Matrix**:
+- macOS 14 (Sonoma)
+- macOS 15 (Sequoia)
+- arm64 (Apple Silicon)
+- x86_64 (Intel) - stretch goal
 
-### 3.2 Settings/Preferences Panel ✅ Priority: LOW
+### 6.3 Launch Preparation
 
-**Current**: Settings are JavaScript-driven via `main.js`
-
-**Improvement**: Native SwiftUI settings panel
-
-**Features**:
-- Default search engine
-- Download location
-- Privacy settings (cookies, storage)
-- Developer tools toggle
-- Auto-update settings
-
-### 3.3 Better Icon Generation ✅ Priority: LOW
-
-**Current**: `Tools/iconify` uses `xcrun actool`
-
-**Improvements**:
-- Automatic favicon download from URL
-- Icon scaling/centering for non-square images
-- Background color picker for transparent icons
-- macOS 14 icon template support
-
----
-
-## Phase 4: Testing & Documentation (Week 9-10)
-
-### 4.1 Automated Testing ✅ Priority: MEDIUM
-
-**Add Tests**:
-```
-Tests/
-├── WebKitForgeTests/
-│   ├── AppScriptRuntimeTests.swift
-│   ├── WebViewDelegatesTests.swift
-│   └── TabManagementTests.swift
-└── WebKitForgeBuilderTests/
-    └── AppConfigTests.swift
-```
-
-**Test Targets**:
-- JavaScript bridge functionality
-- Tab management logic
-- App configuration validation
-- Icon generation
-
-### 4.2 Documentation ✅ Priority: HIGH
-
-**Files to Create/Update**:
-- `README.md` - Complete rewrite
-- `CONTRIBUTING.md` - Development guide
-- `docs/` directory:
-  - `docs/building-apps.md` - User guide for creating apps
-  - `docs/development.md` - Contributor guide
-  - `docs/api-reference.md` - JavaScript API docs
-  - `docs/troubleshooting.md` - Common issues
-
-### 4.3 Example Apps ✅ Priority: LOW
-
-**Update `sites/` directory**:
-- Modernize existing example apps
-- Add new examples:
-  - `sites/ChatGPT/` - AI assistant
-  - `sites/Linear/` - Project management
-  - `sites/Notion/` - Note-taking
-  - `sites/Figma/` - Design tool
-
----
-
-## Phase 5: Release Preparation (Week 11-12)
-
-### 5.1 Branding ✅ Priority: HIGH
-
-**Rename Everything**:
-- `MacPin` → `WebKitForge`
-- `com.github.kfix.MacPin` → `org.webkitforge.WebKitForge`
-- Update all files, comments, docs
-
-**Files Affected**: ~50+ files
-
-**Strategy**: Use `replaceAll` in edit tool
-
-### 5.2 GitHub Release ✅ Priority: HIGH
-
-**Deliverables**:
-1. `WebKitForge-macos-arm64-1.0.0.dmg` - App builder + framework
-2. `WebKitForge-macos-arm64-1.0.0.zip` - Same as DMG
-3. `WebKitForge-universal-1.0.0.dmg` - Universal binary (arm64 + x86_64)
-
-**Release Notes Template**:
-```markdown
-# WebKitForge 1.0.0
-
-First stable release of WebKitForge, a modern WebKit-based SSB framework.
-
-## Features
-- ✅ Native macOS 14+ support
-- ✅ Swift 6.0
-- ✅ GUI App Builder
-- ✅ Fixed tab management (better than Unite!)
-- ✅ Self-contained apps
-- ✅ Notarization support
-
-## Download
-- [WebKitForge-macos-arm64-1.0.0.dmg](...)
-- [WebKitForge-universal-1.0.0.dmg](...)
-```
-
-### 5.3 Website ✅ Priority: MEDIUM
-
-**Domain**: `webkitforge.org` (or similar)
-
-**Pages**:
-- Home - Feature showcase
-- Download - Latest release
-- Docs - User + dev guides
-- Examples - Screenshot gallery
-
-**Tech**: Static site (Hugo/Jekyll) hosted on GitHub Pages
+**Checklist**:
+- [ ] Update README with new value proposition
+- [ ] Create demo video
+- [ ] Prepare Hacker News post
+- [ ] Set up GitHub Sponsors
+- [ ] Create landing page
 
 ---
 
 ## Success Metrics
 
-### Phase 1 (Modernization)
-- ✅ Zero build errors
-- ✅ Zero deprecation warnings
-- ✅ Passes macOS 14/15 compatibility tests
+### Phase 1-2 (Content Blocking + Injection)
+- ✅ Ads blocked on test sites
+- ✅ Custom CSS applies correctly
+- ✅ No site breakage
 
-### Phase 2 (Features)
-- ✅ GUI app builder creates working apps
-- ✅ Tab management has no visibility bugs
-- ✅ Apps are self-contained and portable
+### Phase 3-4 (Block Lists + AI)
+- ✅ EasyList rules compile and apply
+- ✅ Ollama sidebar functional
+- ✅ Page summarization works
 
-### Phase 3 (Polish)
-- ✅ UI looks native on macOS 14/15
-- ✅ Users prefer WebKitForge over Unite/Coherence
-
-### Phase 4 (Testing)
-- ✅ Test coverage >70%
-- ✅ Documentation is complete
-
-### Phase 5 (Release)
-- ✅ 1.0.0 tagged on GitHub
-- ✅ 100+ stars within 3 months
-- ✅ 10+ community contributors
+### Phase 5-6 (Builder + Release)
+- ✅ GUI builder creates working apps
+- ✅ 100+ GitHub stars within 1 month
+- ✅ PWAKitBuilder sells on Gumroad
 
 ---
 
-## Future Enhancements (Post-1.0)
+## Future Enhancements (Post-v1.0)
 
-### Multi-Tab Apps
-- Allow single app to have multiple permanent tabs
-- Example: Gmail app with Mail, Calendar, Contacts tabs
+### Menu Bar Apps
+- Lightweight apps in menu bar
+- Click to show popup (like Slack status)
 
-### Notification Badge Support
+### Notification Badges
 - Show unread counts on Dock icon
 - Requires webpage JavaScript API
 
-### Menu Bar Apps
-- Lightweight apps that live in menu bar
-- Click to show popup window (like Slack)
-
-### Extension Support
-- Safari-like extensions
-- User scripts repository
-- Adblocker built-in
+### Per-App Proxy (Advanced)
+- Route specific apps through SOCKS5 proxy
+- Useful for geo-restricted content
+- Requires NEAppProxyProvider research
 
 ### iOS Version
 - Port to iOS/iPadOS
 - Share core WebKit wrapper code
 
-### Windows/Linux Ports
-- GTK+ WebKit2 for Linux
-- Edge WebView2 for Windows
-- Cross-platform app definitions
-
 ---
 
 ## Timeline Summary
 
-| Phase | Duration | Completion Date |
-|-------|----------|----------------|
-| 1. Modernization | 2 weeks | Nov 29, 2025 |
-| 2. Features | 4 weeks | Dec 27, 2025 |
-| 3. Polish | 2 weeks | Jan 10, 2026 |
-| 4. Testing | 2 weeks | Jan 24, 2026 |
-| 5. Release | 2 weeks | Feb 7, 2026 |
+| Phase | Focus | Duration | Target Date |
+|-------|-------|----------|-------------|
+| 0 | Content Blocker Core | 1 week | ✅ Complete |
+| 1 | Content Blocking Polish | 2 weeks | Dec 30, 2025 |
+| 2 | CSS/JS Injection | 2 weeks | Jan 13, 2026 |
+| 3 | Block Lists | 2 weeks | Jan 27, 2026 |
+| 4 | AI Sidebar | 4 weeks | Feb 24, 2026 |
+| 5 | GUI Builder | 4 weeks | Mar 24, 2026 |
+| 6 | Polish & Release | 2 weeks | Apr 7, 2026 |
 
-**v1.0.0 Target**: February 7, 2026
-
----
-
-## Immediate Next Steps (This Week)
-
-1. ✅ Update `Package.swift` to Swift 6.0 + macOS 14
-2. ✅ Fix all deprecation warnings (15 total)
-3. ✅ Test build and run sample app
-4. ✅ Commit modernization changes
-5. ✅ Start GUI app builder prototype
-
----
-
-## Questions to Answer
-
-1. **Licensing**: Keep GPL-3.0 or switch to MIT/Apache 2.0?
-   - **Decision**: Keep GPL-3.0 to honor original
-   
-2. **Notarization**: Wait for paid account or release unsigned first?
-   - **Decision**: Release unsigned with instructions for users
-   
-3. **Universal Binary**: Support x86_64 or arm64-only?
-   - **Decision**: Start arm64-only, add universal later if requested
-   
-4. **Backward Compat**: Support macOS 13 (Ventura)?
-   - **Decision**: No - target macOS 14+ for modern APIs
+**v1.0 Target**: April 7, 2026
 
 ---
 
 ## Resources
 
-- **Original MacPin Repo**: https://github.com/kfix/MacPin
-- **WebKit Documentation**: https://webkit.org/documentation/
-- **Swift Argument Parser**: https://github.com/apple/swift-argument-parser
-- **Notarization Guide**: https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution
+- **WebKit Content Blockers**: https://webkit.org/blog/3476/content-blockers-first-look/
+- **WKContentRuleListStore**: https://developer.apple.com/documentation/webkit/wkcontentruleliststore
+- **Ollama API**: https://github.com/ollama/ollama/blob/main/docs/api.md
+- **EasyList**: https://easylist.to/
 
 ---
 
-**Last Updated**: November 15, 2025  
+**Last Updated**: December 16, 2025  
 **Maintainer**: @chindris-mihai-alexandru

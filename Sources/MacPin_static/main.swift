@@ -1,11 +1,11 @@
 import Foundation
-import MacPin
+import PWAKit
 
 #if os(macOS)
 import AppKit
-let app = MacPin.MacPinApp.shared
+let app = PWAKit.MacPinApp.shared
 print("initializing MacPinAppDelegateOSX()")
-let appDel = MacPin.MacPinAppDelegateOSX()
+let appDel = PWAKit.MacPinAppDelegateOSX()
 app.delegate = appDel
 app.run()
 #elseif os(iOS)

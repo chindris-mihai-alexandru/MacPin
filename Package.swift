@@ -78,11 +78,13 @@ if let iosvar = ProcessInfo.processInfo.environment["PWAKIT_IOS"], !iosvar.isEmp
             name: "PWAKit_static",
             dependencies: [
                 .target(name: "PWAKit")
-            ]
+            ],
+            path: "Sources/MacPin_static"
         ),
         .executableTarget(
             name: "PWAKit_stub",
             dependencies: [],
+            path: "Sources/MacPin_stub",
             linkerSettings: [
                 .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@loader_path:@loader_path/../Frameworks"])
             ]

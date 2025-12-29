@@ -32,6 +32,10 @@ enum MPWebViewConfigOptions {
 		allowsMagnification(Bool), allowsRecording(Bool),
 		caching(Bool), useSystemAppearance(Bool),
 		inspectorVisible(Bool),
+		
+		// Content blocking options
+		blockAds(Bool), blockTrackers(Bool), blockCookies(Bool),
+		blockSocial(Bool), httpsUpgrade(Bool),
 
 		preinject([String]), postinject([String]),
 		style([String]), subscribeTo([String]),
@@ -66,6 +70,12 @@ extension MPWebViewConfigOptions: RawRepresentable, Hashable {
 					case "allowsMagnification": self = .allowsMagnification(value)
 					case "allowsRecording":     self = .allowsRecording(value)
 					case "useSystemAppearance": self = .useSystemAppearance(value)
+					// Content blocking options
+					case "blockAds":            self = .blockAds(value)
+					case "blockTrackers":       self = .blockTrackers(value)
+					case "blockCookies":        self = .blockCookies(value)
+					case "blockSocial":         self = .blockSocial(value)
+					case "httpsUpgrade":        self = .httpsUpgrade(value)
 					default:
 						warn("unhandled boolean option: {\(rawValue): \(value)}")
 						return nil
@@ -286,6 +296,17 @@ extension MPWebViewConfigOptions: RawRepresentable, Hashable {
 	//func reloadFromOrigin()
 	//func stopLoading() -> WKNavigation?
 	//var snapshotURL: String { get } // gets a data:// of the WKThumbnailView
+	
+	// Content blocking methods (available macOS 10.13+, iOS 11+)
+	func enableAdBlocking() -> Bool
+	func enableTrackerBlocking() -> Bool
+	func enableCookieBlocking() -> Bool
+	func enableSocialBlocking() -> Bool
+	func enableHttpsUpgrade() -> Bool
+	func enablePrivacyProtection()
+	func enableMaxPrivacy()
+	func disableAllContentBlocking()
+	func isBlockingEnabled(_ type: String) -> Bool
 }
 // USETHESE:
 // https://github.com/apple/swift-evolution/blob/master/proposals/0195-dynamic-member-lookup.md
@@ -733,6 +754,32 @@ class MPWebView: WKWebView, WebViewScriptExports {
 					authorizedOriginsForNotifications = value
 				case .useSystemAppearance(let value):
 					self.useSystemAppearance = value
+				// Content blocking options
+				case .blockAds(let value) where value:
+					if #available(macOS 10.13, iOS 11, *) {
+						enableAdBlocking()
+					}
+				case .blockAds: break
+				case .blockTrackers(let value) where value:
+					if #available(macOS 10.13, iOS 11, *) {
+						enableTrackerBlocking()
+					}
+				case .blockTrackers: break
+				case .blockCookies(let value) where value:
+					if #available(macOS 10.13, iOS 11, *) {
+						enableCookieBlocking()
+					}
+				case .blockCookies: break
+				case .blockSocial(let value) where value:
+					if #available(macOS 10.13, iOS 11, *) {
+						enableSocialBlocking()
+					}
+				case .blockSocial: break
+				case .httpsUpgrade(let value) where value:
+					if #available(macOS 10.13, iOS 11, *) {
+						enableHttpsUpgrade()
+					}
+				case .httpsUpgrade: break
 				default:
 					warn("unhandled config-option: \(option)")
 			}
@@ -958,6 +1005,111 @@ class MPWebView: WKWebView, WebViewScriptExports {
 			if !blockLists.contains(json) && loadUserBlockListFromBundle(json, webctl: configuration.userContentController, onlyForTop: false) { blockLists.append(json); return true }
 		}
 		return false
+	}
+
+	// MARK: - Content Blocking Methods
+	
+	/// Track which content blocking rule sets are enabled
+	var contentBlockingEnabled: Set<String> = []
+	
+	/// Enable ad blocking for this WebView
+	@available(macOS 10.13, iOS 11, *)
+	@discardableResult
+	func enableAdBlocking() -> Bool {
+		guard !contentBlockingEnabled.contains("ads") else { return false }
+		ContentBlocker.shared.applyRuleSet(.ads, to: configuration.userContentController) { [weak self] success in
+			if success {
+				self?.contentBlockingEnabled.insert("ads")
+				warn("Ad blocking enabled")
+			}
+		}
+		return true
+	}
+	
+	/// Enable tracker blocking for this WebView
+	@available(macOS 10.13, iOS 11, *)
+	@discardableResult
+	func enableTrackerBlocking() -> Bool {
+		guard !contentBlockingEnabled.contains("trackers") else { return false }
+		ContentBlocker.shared.applyRuleSet(.trackers, to: configuration.userContentController) { [weak self] success in
+			if success {
+				self?.contentBlockingEnabled.insert("trackers")
+				warn("Tracker blocking enabled")
+			}
+		}
+		return true
+	}
+	
+	/// Enable third-party cookie blocking for this WebView
+	@available(macOS 10.13, iOS 11, *)
+	@discardableResult
+	func enableCookieBlocking() -> Bool {
+		guard !contentBlockingEnabled.contains("cookies") else { return false }
+		ContentBlocker.shared.applyRuleSet(.cookies, to: configuration.userContentController) { [weak self] success in
+			if success {
+				self?.contentBlockingEnabled.insert("cookies")
+				warn("Cookie blocking enabled")
+			}
+		}
+		return true
+	}
+	
+	/// Enable social widget blocking for this WebView
+	@available(macOS 10.13, iOS 11, *)
+	@discardableResult
+	func enableSocialBlocking() -> Bool {
+		guard !contentBlockingEnabled.contains("social") else { return false }
+		ContentBlocker.shared.applyRuleSet(.social, to: configuration.userContentController) { [weak self] success in
+			if success {
+				self?.contentBlockingEnabled.insert("social")
+				warn("Social widget blocking enabled")
+			}
+		}
+		return true
+	}
+	
+	/// Enable HTTPS upgrade for this WebView
+	@available(macOS 10.13, iOS 11, *)
+	@discardableResult
+	func enableHttpsUpgrade() -> Bool {
+		guard !contentBlockingEnabled.contains("https") else { return false }
+		ContentBlocker.shared.applyRuleSet(.httpsUpgrade, to: configuration.userContentController) { [weak self] success in
+			if success {
+				self?.contentBlockingEnabled.insert("https")
+				warn("HTTPS upgrade enabled")
+			}
+		}
+		return true
+	}
+	
+	/// Enable default privacy protection (ads + trackers)
+	@available(macOS 10.13, iOS 11, *)
+	func enablePrivacyProtection() {
+		enableAdBlocking()
+		enableTrackerBlocking()
+	}
+	
+	/// Enable maximum privacy protection (ads + trackers + cookies + social)
+	@available(macOS 10.13, iOS 11, *)
+	func enableMaxPrivacy() {
+		enableAdBlocking()
+		enableTrackerBlocking()
+		enableCookieBlocking()
+		enableSocialBlocking()
+		enableHttpsUpgrade()
+	}
+	
+	/// Disable all content blocking for this WebView
+	@available(macOS 10.13, iOS 11, *)
+	func disableAllContentBlocking() {
+		ContentBlocker.shared.removeAllRuleLists(from: configuration.userContentController)
+		contentBlockingEnabled.removeAll()
+		warn("All content blocking disabled")
+	}
+	
+	/// Check if a specific blocking type is enabled
+	func isBlockingEnabled(_ type: String) -> Bool {
+		return contentBlockingEnabled.contains(type)
 	}
 
 /*

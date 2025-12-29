@@ -1,0 +1,86 @@
+[
+    {
+        "trigger": {
+            "url-filter": ".*",
+            "if-domain": ["*doubleclick.net", "*googlesyndication.com", "*googleadservices.com"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*",
+            "if-domain": ["*adnxs.com", "*adsrvr.org", "*adtechus.com", "*advertising.com"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*",
+            "if-domain": ["*taboola.com", "*outbrain.com", "*revcontent.com", "*mgid.com"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*\\/ads\\/.*"
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*\\/ad\\/.*"
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*\\.ads\\..*"
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*pagead.*"
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*adsense.*"
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*advert.*\\.js"
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*banner.*\\.(?:gif|jpg|png)",
+            "resource-type": ["image"]
+        },
+        "action": {
+            "type": "block"
+        }
+    }
+]

@@ -1,0 +1,99 @@
+[
+    {
+        "trigger": {
+            "url-filter": ".*",
+            "if-domain": ["*google-analytics.com", "*googletagmanager.com", "*googletagservices.com"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*",
+            "if-domain": ["*facebook.net", "*fbcdn.net", "*connect.facebook.com"],
+            "load-type": ["third-party"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*",
+            "if-domain": ["*hotjar.com", "*mouseflow.com", "*fullstory.com", "*clarity.ms"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*",
+            "if-domain": ["*mixpanel.com", "*amplitude.com", "*segment.io", "*segment.com"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*",
+            "if-domain": ["*newrelic.com", "*nr-data.net"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*\\/analytics\\.js"
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*\\/gtm\\.js"
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*beacon.*",
+            "resource-type": ["image", "script"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*\\/pixel\\.",
+            "resource-type": ["image"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*tracking.*\\.js"
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*\\.gif\\?.*utm_",
+            "resource-type": ["image"]
+        },
+        "action": {
+            "type": "block"
+        }
+    }
+]
