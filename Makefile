@@ -3,11 +3,13 @@ export
 #^ export all the variables
 builddir			?= build
 
-VERSION				:= 2022.0.0
+VERSION				:= 0.2.0
 
-macpin				:= MacPin
+# Orbit - AI-augmented browser workspace (formerly MacPin)
+orbit				:= Orbit
+macpin				:= $(orbit)
 macpin_sites		?= sites
-installdir			:= ~/Applications/MacPin.localized
+installdir			:= ~/Applications/$(orbit).localized
 bundle_untracked	?= 0
 appnames			= $(patsubst $(macpin_sites)/%,%.app,$(wildcard $(macpin_sites)/*))
 
@@ -28,7 +30,7 @@ $(info $(macpin_sites)/* => $(appdir) => $(installdir)/*.app)
 gen_apps			= $(patsubst $(macpin_sites)/%,$(appdir)/%.app,$(wildcard $(macpin_sites)/*))
 #gen_action_exts	= $(patsubst %,$(appdir)/%.appex,$(apps))
 
-template_bundle_id	:= com.github.kfix.MacPin
+template_bundle_id	:= com.github.chindris-mihai-alexandru.Orbit
 xcassets			:= $(builddir)/xcassets/$(platform)
 icontypes			:= --imageset
 
@@ -119,12 +121,12 @@ endif
 # github settings for release: target
 #####
 LAST_TAG	 != git describe --abbrev=0 --tags
-USER		 := kfix
-REPO		 := MacPin
+USER		 := chindris-mihai-alexandru
+REPO		 := Orbit
 ZIP			 := $(outdir)/$(REPO)-$(platform)-$(arch)-$(VERSION).zip
 TXZ			 := $(outdir)/$(REPO)-$(platform)-$(arch)-$(VERSION).tar.xz
 DMG			 := $(outdir)/$(REPO)-$(platform)-$(arch)-$(VERSION).dmg
-GH_RELEASE_JSON = '{"tag_name": "v$(VERSION)","target_commitish": "master","name": "v$(VERSION)","body": "MacPin $(plaform) $(arch) build of version $(VERSION)","draft": false, "prerelease": true}'
+GH_RELEASE_JSON = '{"tag_name": "v$(VERSION)","target_commitish": "main","name": "v$(VERSION)","body": "Orbit $(platform) $(arch) build of version $(VERSION)","draft": false, "prerelease": true}'
 #####
 
 $(xcassets)/%.xcassets: $(macpin_sites)/%/icon.png
