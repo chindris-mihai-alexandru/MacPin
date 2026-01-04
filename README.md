@@ -11,7 +11,7 @@
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 [![Build](https://github.com/chindris-mihai-alexandru/Orbit/actions/workflows/swift-build.yml/badge.svg)](https://github.com/chindris-mihai-alexandru/Orbit/actions/workflows/swift-build.yml)
 [![codecov](https://codecov.io/gh/chindris-mihai-alexandru/Orbit/graph/badge.svg)](https://codecov.io/gh/chindris-mihai-alexandru/Orbit)
-[![Version](https://img.shields.io/badge/version-0.0.0-blue.svg)](https://github.com/chindris-mihai-alexandru/Orbit/releases)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/chindris-mihai-alexandru/Orbit/releases)
 
 </center>
 
